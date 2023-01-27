@@ -1,15 +1,65 @@
-version: '3.1'
+version: '3.8'
 services:
-  stats-server:
-    ports:
-      - "9090:9090"
-
-  stats-db:
-    image: postgres:14-alpine
-
-  ewm-service:
+  gateway:
+    build: ./gateway
+    image: ewm-gateway
+    container_name: ewm-gateway
+    depends_on:
+      - ewm-service
     ports:
       - "8080:8080"
+  stats-server:
+    build: ./stats-server
+    image: stats-server
+    container_name: ewm-stats-server
+    depends_on:
+      - stats-db
+    ports:
+      - "9090:9090"
+    environment:
+      - DB_NAME=stats
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - DB_HOST=stats-db
+      - DB_PORT=5432
+
+  stats-db:
+    image: postgres:15.1-alpine
+    container_name: ewm-stats-db
+    ports:
+      - "6542:5432"
+    environment:
+      - POSTGRES_DB=stats
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    volumes:
+      - /var/lib/db/data/
+
+
+  ewm-service:
+    build: ./ewm-service
+    image: emw-service
+    container_name: ewm-service
+    depends_on:
+      - stats-server
+      - ewm-db
+    ports:
+      - "8090:8090"
+    environment:
+      - DB_NAME=emw
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - DB_HOST=ewm-db
+      - DB_PORT=5432
 
   ewm-db:
-    image: postgres:14-alpine
+    image: postgres:15.1-alpine
+    container_name: ewm-db
+    ports:
+      - "6541:5432"
+    environment:
+      - POSTGRES_DB=ewm
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    volumes:
+      - /var/lib/db/data/
