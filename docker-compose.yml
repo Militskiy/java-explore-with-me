@@ -46,6 +46,7 @@ services:
     ports:
       - "8090:8090"
     environment:
+      - STATS_SERVER_URL=http://stats-server:9090
       - DB_NAME=emw
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
