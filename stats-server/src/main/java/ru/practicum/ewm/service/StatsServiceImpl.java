@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -75,7 +76,7 @@ public class StatsServiceImpl implements StatsService {
                                                         .hits(entry.getValue().size())
                                                         .build())
                                                 .sorted(Comparator.comparingInt(HitStats::getHits).reversed())
-                                                .toList())
+                                                .collect(Collectors.toList()))
                                 .build();
                     } else {
                         Map<Tuple2<String, String>, Integer> hits = new HashMap<>();
@@ -96,7 +97,7 @@ public class StatsServiceImpl implements StatsService {
                                                 .hits(entry.getValue())
                                                 .build())
                                         .sorted(Comparator.comparingInt(HitStats::getHits).reversed())
-                                        .toList())
+                                        .collect(Collectors.toList()))
                                 .build();
                     }
                 });
