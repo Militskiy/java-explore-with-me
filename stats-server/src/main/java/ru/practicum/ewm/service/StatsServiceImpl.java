@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -55,51 +56,57 @@ public class StatsServiceImpl implements StatsService {
     private Mono<StatsResponse> getStatsMonoFromFlux(Flux<Hit> fluxOfHits, Boolean isUnique) {
         return fluxOfHits
                 .collectList()
-                .map(list -> {
-                    if (isUnique) {
-                        Map<Tuple2<String, String>, Set<String>> uniqueHits = new HashMap<>();
-                        list.forEach(hit -> {
-                            var key = Tuples.of(hit.getApp(), hit.getUri());
-                            if (!uniqueHits.containsKey(key)) {
-                                uniqueHits.put(key, new HashSet<>());
-                                uniqueHits.get(key).add(hit.getIp());
-                            }
-                            uniqueHits.get(key).add(hit.getIp());
-                        });
-                        return StatsResponse.builder()
-                                .hitStats(
-                                        uniqueHits.entrySet()
-                                                .stream()
-                                                .map(entry -> HitStats.builder()
-                                                        .app(entry.getKey().getT1())
-                                                        .uri(entry.getKey().getT2())
-                                                        .hits(entry.getValue().size())
-                                                        .build())
-                                                .sorted(Comparator.comparingInt(HitStats::getHits).reversed())
-                                                .collect(Collectors.toList()))
-                                .build();
-                    } else {
-                        Map<Tuple2<String, String>, Integer> hits = new HashMap<>();
-                        list.forEach(hit -> {
-                            var key = Tuples.of(hit.getApp(), hit.getUri());
-                            if (!hits.containsKey(key)) {
-                                hits.put(key, 1);
-                            } else {
-                                hits.put(key, hits.get(key) + 1);
-                            }
-                        });
-                        return StatsResponse.builder()
-                                .hitStats(hits.entrySet()
-                                        .stream()
-                                        .map(entry -> HitStats.builder()
-                                                .app(entry.getKey().getT1())
-                                                .uri(entry.getKey().getT2())
-                                                .hits(entry.getValue())
-                                                .build())
-                                        .sorted(Comparator.comparingInt(HitStats::getHits).reversed())
-                                        .collect(Collectors.toList()))
-                                .build();
-                    }
-                });
+                .map(list -> isUnique ? getUniqueIpStats(list) : getNonUniqueIpStats(list));
+    }
+
+    private StatsResponse getUniqueIpStats(List<Hit> hitsList) {
+        Map<Tuple2<String, String>, Set<String>> uniqueHits = new HashMap<>();
+
+        hitsList.forEach(hit -> {
+            var key = Tuples.of(hit.getApp(), hit.getUri());
+            if (!uniqueHits.containsKey(key)) {
+                uniqueHits.put(key, new HashSet<>());
+                uniqueHits.get(key).add(hit.getIp());
+            }
+            uniqueHits.get(key).add(hit.getIp());
+        });
+
+        return StatsResponse.builder()
+                .hitStats(
+                        uniqueHits.entrySet()
+                                .stream()
+                                .map(entry -> HitStats.builder()
+                                        .app(entry.getKey().getT1())
+                                        .uri(entry.getKey().getT2())
+                                        .hits(entry.getValue().size())
+                                        .build())
+                                .sorted(Comparator.comparingInt(HitStats::getHits).reversed())
+                                .collect(Collectors.toList()))
+                .build();
+    }
+
+    private StatsResponse getNonUniqueIpStats(List<Hit> hitsList) {
+        Map<Tuple2<String, String>, Integer> hits = new HashMap<>();
+
+        hitsList.forEach(hit -> {
+            var key = Tuples.of(hit.getApp(), hit.getUri());
+            if (!hits.containsKey(key)) {
+                hits.put(key, 1);
+            } else {
+                hits.put(key, hits.get(key) + 1);
+            }
+        });
+
+        return StatsResponse.builder()
+                .hitStats(hits.entrySet()
+                        .stream()
+                        .map(entry -> HitStats.builder()
+                                .app(entry.getKey().getT1())
+                                .uri(entry.getKey().getT2())
+                                .hits(entry.getValue())
+                                .build())
+                        .sorted(Comparator.comparingInt(HitStats::getHits).reversed())
+                        .collect(Collectors.toList()))
+                .build();
     }
 }
