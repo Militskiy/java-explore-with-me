@@ -32,7 +32,7 @@ public class StatsController {
     @PostMapping("/hit")
     @Operation(summary = "post stats")
     public Mono<ResponseEntity<HitCreateResponse>> createHit(@RequestBody @Valid HitCreateRequest request) {
-        log.info("saving hit");
+        log.info("saving hit: {}", request);
         return statsService.createHit(request)
                 .map(res -> ResponseEntity.status(201).body(res));
     }

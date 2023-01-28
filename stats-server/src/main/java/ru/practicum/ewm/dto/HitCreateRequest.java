@@ -7,6 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Valid
 @Value
@@ -19,5 +20,5 @@ public class HitCreateRequest {
     String uri;
     @NotBlank(message = "ip field must not be blank")
     String ip;
-    LocalDateTime timestamp = LocalDateTime.now();
+    LocalDateTime timestamp = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 }
