@@ -1,13 +1,5 @@
 version: '3.8'
 services:
-  gateway:
-    build: ./gateway
-    image: ewm-gateway
-    container_name: ewm-gateway
-    depends_on:
-      - ewm-service
-    ports:
-      - "8080:8080"
   stats-server:
     build: ./stats-server
     image: stats-server
@@ -44,7 +36,7 @@ services:
       - stats-server
       - ewm-db
     ports:
-      - "8090:8090"
+      - "8080:8080"
     environment:
       - STATS_SERVER_URL=http://stats-server:9090
       - DB_NAME=emw

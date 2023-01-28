@@ -12,7 +12,6 @@
 
 	<name>Explore With Me</name>
 	<modules>
-		<module>gateway</module>
 		<module>stats-server</module>
 		<module>ewm-service</module>
 	</modules>
@@ -23,7 +22,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<java.version>17</java.version>
+		<java.version>11</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
