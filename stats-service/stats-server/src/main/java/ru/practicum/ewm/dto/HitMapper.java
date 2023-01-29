@@ -1,7 +1,7 @@
 package ru.practicum.ewm.dto;
 
-import dtos.HitCreateRequest;
-import dtos.HitCreateResponse;
+import ru.practicum.ewm.dtos.HitCreateRequest;
+import ru.practicum.ewm.dtos.HitCreateResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 import ru.practicum.ewm.model.Hit;
@@ -10,5 +10,5 @@ import ru.practicum.ewm.model.Hit;
 public interface HitMapper {
     Hit toDocument(HitCreateRequest hitCreateRequest);
 
-    HitCreateResponse toResponseFromMongo(Hit hit);
+    HitCreateResponse toResponse(Hit hit);
 }

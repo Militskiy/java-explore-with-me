@@ -1,18 +1,19 @@
-import dtos.HitCreateRequest;
-import dtos.HitCreateResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+package ru.practicum.ewm.client;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import ru.practicum.ewm.dtos.HitCreateRequest;
+import ru.practicum.ewm.dtos.HitCreateResponse;
 
-@RequiredArgsConstructor
+
 public class StatsClient {
+    private final WebClient client;
 
-    @Value("${stats-server.url}")
-    private String server;
-    private final WebClient client = WebClient.create(server);
+    public StatsClient(WebClient client) {
+        this.client = client;
+    }
 
     public Mono<HitCreateResponse> post(HitCreateRequest hitCreateRequest) {
         return client.post()

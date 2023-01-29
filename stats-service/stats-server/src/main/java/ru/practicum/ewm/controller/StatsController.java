@@ -1,7 +1,7 @@
 package ru.practicum.ewm.controller;
 
-import dtos.HitCreateRequest;
-import dtos.HitCreateResponse;
+import ru.practicum.ewm.dtos.HitCreateRequest;
+import ru.practicum.ewm.dtos.HitCreateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,5 +1,6 @@
-package dtos;
+package ru.practicum.ewm.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -14,5 +15,6 @@ public class HitCreateResponse {
     String app;
     String uri;
     String ip;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime timestamp;
 }

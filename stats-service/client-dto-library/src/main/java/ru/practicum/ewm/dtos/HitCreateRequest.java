@@ -1,4 +1,4 @@
-package dtos;
+package ru.practicum.ewm.dtos;
 
 import lombok.Builder;
 import lombok.Value;

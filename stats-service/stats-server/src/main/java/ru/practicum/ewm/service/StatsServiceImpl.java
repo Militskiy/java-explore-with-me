@@ -1,7 +1,7 @@
 package ru.practicum.ewm.service;
 
-import dtos.HitCreateRequest;
-import dtos.HitCreateResponse;
+import ru.practicum.ewm.dtos.HitCreateRequest;
+import ru.practicum.ewm.dtos.HitCreateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -27,7 +27,7 @@ public class StatsServiceImpl implements StatsService {
     public Mono<HitCreateResponse> createHit(HitCreateRequest hitCreateRequest) {
         Hit hit = mapper.toDocument(hitCreateRequest);
         hit.setTimestamp(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
-        return mongoRepository.save(hit).map(mapper::toResponseFromMongo);
+        return mongoRepository.save(hit).map(mapper::toResponse);
     }
 
     @Override
