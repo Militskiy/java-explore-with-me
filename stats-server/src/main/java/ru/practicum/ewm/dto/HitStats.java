@@ -10,5 +10,5 @@ import lombok.extern.jackson.Jacksonized;
 public class HitStats {
     String app;
     String uri;
-    int hits;
+    Integer hits;
 }

@@ -1,4 +1,4 @@
-package ru.practicum.ewm.client;
+package ru.practicum.ewm.util.client;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,8 +7,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import ru.practicum.ewm.client.dto.HitCreateRequest;
-import ru.practicum.ewm.client.dto.HitCreateResponse;
+import ru.practicum.ewm.util.client.dto.HitCreateRequest;
+import ru.practicum.ewm.util.client.dto.HitCreateResponse;
 
 @Service
 @RequiredArgsConstructor

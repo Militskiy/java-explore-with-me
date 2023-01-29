@@ -1,4 +1,4 @@
-package ru.practicum.ewm.client.dto;
+package ru.practicum.ewm.util.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;

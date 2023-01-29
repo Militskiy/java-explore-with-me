@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 @Jacksonized
 public class HitCreateResponse {
-    Long id;
+    String id;
     String app;
     String uri;
     String ip;

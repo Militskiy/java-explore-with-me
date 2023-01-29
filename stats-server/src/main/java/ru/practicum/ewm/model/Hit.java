@@ -1,21 +1,22 @@
 package ru.practicum.ewm.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
+@Document(collection = "stats")
 @Data
-@Table("hits")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Hit {
     @Id
-    @Column("hit_id")
-    private Long id;
+    private String id;
     private String app;
     private String uri;
     private String ip;
-    @Column("created")
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private LocalDateTime timestamp;
 }

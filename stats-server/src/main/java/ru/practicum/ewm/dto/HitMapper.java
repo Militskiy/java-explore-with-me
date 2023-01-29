@@ -6,7 +6,7 @@ import ru.practicum.ewm.model.Hit;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = "spring")
 public interface HitMapper {
-    Hit toEntity(HitCreateRequest hitCreateRequest);
+    Hit toDocument(HitCreateRequest hitCreateRequest);
 
-    HitCreateResponse toCreateResponse(Hit hit);
+    HitCreateResponse toResponseFromMongo(Hit hit);
 }
