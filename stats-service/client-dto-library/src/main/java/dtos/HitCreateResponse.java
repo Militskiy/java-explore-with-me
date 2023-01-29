@@ -1,4 +1,4 @@
-package ru.practicum.ewm.util.client.dto;
+package dtos;
 
 import lombok.Builder;
 import lombok.Value;
@@ -9,9 +9,10 @@ import java.time.LocalDateTime;
 @Value
 @Builder
 @Jacksonized
-public class HitCreateRequest {
+public class HitCreateResponse {
+    String id;
     String app;
     String uri;
     String ip;
-    LocalDateTime timestamp = LocalDateTime.now();
+    LocalDateTime timestamp;
 }

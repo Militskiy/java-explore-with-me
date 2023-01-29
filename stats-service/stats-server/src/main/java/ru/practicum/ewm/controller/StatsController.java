@@ -1,5 +1,7 @@
 package ru.practicum.ewm.controller;
 
+import dtos.HitCreateRequest;
+import dtos.HitCreateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-import ru.practicum.ewm.dto.HitCreateRequest;
-import ru.practicum.ewm.dto.HitCreateResponse;
 import ru.practicum.ewm.dto.StatsResponse;
 import ru.practicum.ewm.service.StatsService;
 

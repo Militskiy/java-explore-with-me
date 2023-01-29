@@ -1,5 +1,7 @@
 package ru.practicum.ewm.dto;
 
+import dtos.HitCreateRequest;
+import dtos.HitCreateResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 import ru.practicum.ewm.model.Hit;

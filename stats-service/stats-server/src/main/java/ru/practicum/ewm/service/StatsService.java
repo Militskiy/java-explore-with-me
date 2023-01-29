@@ -1,9 +1,9 @@
 package ru.practicum.ewm.service;
 
+import dtos.HitCreateRequest;
+import dtos.HitCreateResponse;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import ru.practicum.ewm.dto.HitCreateRequest;
-import ru.practicum.ewm.dto.HitCreateResponse;
 import ru.practicum.ewm.dto.StatsResponse;
 
 import java.time.LocalDateTime;
