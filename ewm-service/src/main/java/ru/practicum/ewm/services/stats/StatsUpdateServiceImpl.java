@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 public class StatsUpdateServiceImpl implements StatsUpdateService {
     private final StatsClient client;
-    private final static String APP = "ewm-service";
+    private static final String APP = "ewm-service";
 
 
     @Override
