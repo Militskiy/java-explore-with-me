@@ -6,6 +6,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -84,7 +85,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
         final var field = e.getBindingResult().getFieldErrors().stream()
                 .map(err -> "Field: " + err.getField() + ". Error: " + err.getDefaultMessage() + ". Value: " +
-                                err.getRejectedValue())
+                        err.getRejectedValue())
                 .collect(Collectors.toList());
         final String errors = field.toString().substring(1, field.toString().length() - 1);
         log.warn(errors);
@@ -98,11 +99,26 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<ApiError> handleEventDateException(final EventDateException e) {
+        log.warn(e.getMessage());
         final var apiError = ApiError.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(e.getMessage())
                 .reason("For the requested operation the conditions are not met.")
                 .build();
         return ResponseEntity.status(409).body(apiError);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ApiError> handleMissingServletRequestParameterException(
+            final MissingServletRequestParameterException e
+    ) {
+        final String error = "Missing request parameter: " + e.getParameterName();
+        log.warn(error);
+        final var apiError = ApiError.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(error)
+                .reason("Incorrectly made request.")
+                .build();
+        return ResponseEntity.status(400).body(apiError);
     }
 }

@@ -7,14 +7,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
+import ru.practicum.ewm.service.model.request.ParticipationRequest;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -32,6 +35,8 @@ public class User {
     private String email;
     @Column(nullable = false)
     private String name;
+    @OneToMany(mappedBy = "requester")
+    private Set<ParticipationRequest> requests;
 
     @Override
     public boolean equals(Object o) {

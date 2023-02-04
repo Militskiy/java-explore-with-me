@@ -3,9 +3,12 @@ package ru.practicum.ewm.service.service.event;
 import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.service.dto.event.EventCreateRequest;
+import ru.practicum.ewm.service.dto.event.EventFilter;
 import ru.practicum.ewm.service.dto.event.EventFullList;
 import ru.practicum.ewm.service.dto.event.EventList;
 import ru.practicum.ewm.service.dto.event.EventMapper;
@@ -13,11 +16,12 @@ import ru.practicum.ewm.service.dto.event.EventResponse;
 import ru.practicum.ewm.service.dto.event.EventShortResponse;
 import ru.practicum.ewm.service.dto.event.EventUpdateAdminRequest;
 import ru.practicum.ewm.service.dto.event.EventUpdateRequest;
+import ru.practicum.ewm.service.dto.request.ParticipationRequestList;
+import ru.practicum.ewm.service.dto.request.ParticipationRequestMapper;
 import ru.practicum.ewm.service.exception.ConflictException;
 import ru.practicum.ewm.service.exception.NotFoundException;
 import ru.practicum.ewm.service.model.category.Category;
 import ru.practicum.ewm.service.model.event.Event;
-import ru.practicum.ewm.service.model.event.EventState;
 import ru.practicum.ewm.service.model.event.QEvent;
 import ru.practicum.ewm.service.model.user.User;
 import ru.practicum.ewm.service.repository.EventRepository;
@@ -28,11 +32,11 @@ import ru.practicum.ewm.stats.dto.HitStats;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static ru.practicum.ewm.service.dto.event.SortType.VIEWS;
 import static ru.practicum.ewm.service.model.event.AdminStateAction.PUBLISH_EVENT;
 import static ru.practicum.ewm.service.model.event.AdminStateAction.REJECT_EVENT;
 import static ru.practicum.ewm.service.model.event.EventState.CANCELED;
@@ -49,6 +53,7 @@ public class EventServiceImpl implements EventService {
     private final CategoryService categoryService;
     private final StatisticsService statisticsService;
     private final EventMapper mapper;
+    private final ParticipationRequestMapper participationRequestMapper;
 
     @Override
     @Transactional
@@ -104,32 +109,25 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullList findEventsAdmin(
-            Collection<Long> users,
-            Collection<EventState> states,
-            Collection<Long> categories,
-            LocalDateTime rangeStart,
-            LocalDateTime rangeEnd,
-            Integer from,
-            Integer size) {
-        BooleanBuilder builder = new BooleanBuilder();
-        if (users != null && !users.isEmpty()) {
-            builder.and(QEvent.event.initiator.id.in(users));
-        }
-        if (states != null && !states.isEmpty()) {
-            builder.and(QEvent.event.state.in(states));
-        }
-        if (categories != null && !categories.isEmpty()) {
-            builder.and(QEvent.event.category.id.in(categories));
-        }
-        if (rangeStart != null) {
-            builder.and(QEvent.event.eventDate.after(rangeStart));
-        }
-        if (rangeEnd != null) {
-            builder.and(QEvent.event.eventDate.before(rangeEnd));
-        }
-        List<Event> result = eventRepository.findAll(builder, PageRequest.of(from, size)).toList();
+    public EventFullList findEventsAdmin(EventFilter filter, Integer from, Integer size) {
+        List<Event> result = eventRepository.findAll(buildQuery(filter), PageRequest.of(from, size)).toList();
         return EventFullList.builder().events(buildEventResponse(result)).build();
+    }
+
+    @Override
+    public EventList findEventsPublic(EventFilter filter, Integer from, Integer size) {
+        if (filter.getOnlyAvailable() == null) {
+            filter = filter.toBuilder().onlyAvailable(Boolean.FALSE).build();
+        }
+        var result = buildEventShortResponse(eventRepository.findAll(
+                buildQuery(filter),
+                PageRequest.of(from, size, Sort.by("eventDate").ascending())
+        ).toList());
+
+        if (filter.getSort() != null && filter.getSort().equals(VIEWS)) {
+            result.sort(EventShortResponse::compareTo);
+        }
+        return EventList.builder().events(result).build();
     }
 
     @Override
@@ -154,12 +152,31 @@ public class EventServiceImpl implements EventService {
                 foundEvent.getState());
     }
 
-    private Event findEventEntity(Long eventId) {
+    @Override
+    public Event findEventEntity(Long eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
     }
 
-    private Event findUserEventEntity(Long eventId, Long userId) {
+    @Override
+    public ParticipationRequestList findUserEventRequests(Long userId, Long eventId) {
+        return ParticipationRequestList.builder().requests(
+                eventRepository.findByIdAndInitiator_Id(eventId, userId).orElseThrow(
+                                () -> new NotFoundException("Event with id=" + eventId + " was not found")
+                        )
+                        .getRequests().stream()
+                        .map(participationRequestMapper::toResponse)
+                        .collect(Collectors.toList())
+        ).build();
+    }
+
+    @Override
+    public EventResponse findEvent(Long eventId) {
+        return buildEventResponse(List.of(findEventEntity(eventId))).get(0);
+    }
+
+    @Override
+    public Event findUserEventEntity(Long eventId, Long userId) {
         return eventRepository.findEventByIdAndInitiator_Id(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
     }
@@ -179,13 +196,15 @@ public class EventServiceImpl implements EventService {
     }
 
     private List<EventShortResponse> buildEventShortResponse(List<Event> eventList) {
-        var stats = buildStatMap(eventList);
-        if (stats != null && !stats.isEmpty()) {
-            return eventList.stream()
-                    .map(event -> stats.containsKey(event.getId()) ?
-                            mapper.toShortResponseWithViews(event, stats.get(event.getId())) :
-                            mapper.toShortResponse(event))
-                    .collect(Collectors.toList());
+        if (!eventList.isEmpty()) {
+            var stats = buildStatMap(eventList);
+            if (stats != null && !stats.isEmpty()) {
+                return eventList.stream()
+                        .map(event -> stats.containsKey(event.getId()) ?
+                                mapper.toShortResponseWithViews(event, stats.get(event.getId())) :
+                                mapper.toShortResponse(event))
+                        .collect(Collectors.toList());
+            }
         }
         return eventList.stream().map(mapper::toShortResponse).collect(Collectors.toList());
     }
@@ -199,5 +218,36 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toMap(hitStats -> Long.valueOf(hitStats.getUri()
                         .substring(hitStats.getUri().length() - 1)), HitStats::getHits))
                 .block();
+    }
+
+    @NonNull
+    private BooleanBuilder buildQuery(@NonNull EventFilter filter) {
+        BooleanBuilder builder = new BooleanBuilder();
+        if (filter.getText() != null) {
+            builder.and(QEvent.event.annotation.likeIgnoreCase(filter.getText())
+                    .or(QEvent.event.description.likeIgnoreCase(filter.getText())));
+        }
+        if (filter.getUsers() != null && !filter.getUsers().isEmpty()) {
+            builder.and(QEvent.event.initiator.id.in(filter.getUsers()));
+        }
+        if (filter.getStates() != null && !filter.getStates().isEmpty()) {
+            builder.and(QEvent.event.state.in(filter.getStates()));
+        }
+        if (filter.getCategories() != null && !filter.getCategories().isEmpty()) {
+            builder.and(QEvent.event.category.id.in(filter.getCategories()));
+        }
+        if (filter.getPaid() != null) {
+            builder.and(QEvent.event.paid.eq(filter.getPaid()));
+        }
+        if (filter.getRangeStart() != null) {
+            builder.and(QEvent.event.eventDate.after(filter.getRangeStart()));
+        }
+        if (filter.getRangeEnd() != null) {
+            builder.and(QEvent.event.eventDate.before(filter.getRangeEnd()));
+        }
+        if (filter.getOnlyAvailable() != null) {
+            builder.and(QEvent.event.participantLimit.gt(0));
+        }
+        return builder;
     }
 }

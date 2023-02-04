@@ -18,7 +18,11 @@ import ru.practicum.ewm.service.dto.event.EventCreateRequest;
 import ru.practicum.ewm.service.dto.event.EventList;
 import ru.practicum.ewm.service.dto.event.EventResponse;
 import ru.practicum.ewm.service.dto.event.EventUpdateRequest;
+import ru.practicum.ewm.service.dto.request.ParticipationRequestList;
+import ru.practicum.ewm.service.dto.request.ParticipationStatusUpdateRequest;
+import ru.practicum.ewm.service.dto.request.ParticipationStatusUpdateResponse;
 import ru.practicum.ewm.service.service.event.EventService;
+import ru.practicum.ewm.service.service.request.ParticipationRequestService;
 import ru.practicum.ewm.service.validator.ValidationSequence;
 
 import javax.validation.Valid;
@@ -26,25 +30,26 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
 @RestController
-@RequestMapping(path = "/users")
+@RequestMapping(path = "/users/{userId}/events")
 @Slf4j
 @RequiredArgsConstructor
 @Tag(name = "Private: Events")
 @Validated
 public class EventPrivateController {
-    private final EventService service;
+    private final EventService eventService;
+    private final ParticipationRequestService participationRequestService;
 
-    @PostMapping("/{userId}/events")
+    @PostMapping
     @Operation(summary = "Add new event")
     public ResponseEntity<EventResponse> createEvent(
             @RequestBody @Validated(ValidationSequence.class) EventCreateRequest createRequest,
             @PathVariable @Positive Long userId
     ) {
         log.info("Adding new event: {}", createRequest);
-        return ResponseEntity.status(201).body(service.createEvent(createRequest, userId));
+        return ResponseEntity.status(201).body(eventService.createEvent(createRequest, userId));
     }
 
-    @GetMapping("/{userId}/events")
+    @GetMapping
     @Operation(summary = "Find user events")
     public ResponseEntity<EventList> findUserEvents(
             @PathVariable @Positive Long userId,
@@ -53,20 +58,20 @@ public class EventPrivateController {
 
     ) {
         log.info("Getting events for user with ID: {}", userId);
-        return ResponseEntity.ok(service.findUserEvents(userId, from, size));
+        return ResponseEntity.ok(eventService.findUserEvents(userId, from, size));
     }
 
-    @GetMapping("/{userId}/events/{eventId}")
+    @GetMapping("/{eventId}")
     @Operation(summary = "Find user event by ID")
     public ResponseEntity<EventResponse> findUserEvent(
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId
     ) {
         log.info("Getting event with id={} for user with id={}", eventId, userId);
-        return ResponseEntity.ok(service.findUserEvent(eventId, userId));
+        return ResponseEntity.ok(eventService.findUserEvent(eventId, userId));
     }
 
-    @PatchMapping("/{userId}/events/{eventId}")
+    @PatchMapping("/{eventId}")
     @Operation(summary = "Update event")
     public ResponseEntity<EventResponse> updateEvent(
             @RequestBody @Valid EventUpdateRequest updateRequest,
@@ -74,6 +79,27 @@ public class EventPrivateController {
             @PathVariable @Positive Long eventId
     ) {
         log.info("Updating event with id={} for user with id={}", eventId, userId);
-        return ResponseEntity.ok(service.updateEvent(updateRequest, eventId, userId));
+        return ResponseEntity.ok(eventService.updateEvent(updateRequest, eventId, userId));
+    }
+
+    @GetMapping("/{eventId}/requests")
+    @Operation(summary = "Get requests for user event")
+    public ResponseEntity<ParticipationRequestList> getEventRequests(
+            @PathVariable @Positive Long userId,
+            @PathVariable @Positive Long eventId
+    ) {
+        log.info("Getting participation requests for user with id={} event with id={}", userId, eventId);
+        return ResponseEntity.ok(eventService.findUserEventRequests(userId, eventId));
+    }
+
+    @PatchMapping("/{eventId}/requests")
+    @Operation(summary = "Confirm or reject participation requests")
+    public ResponseEntity<ParticipationStatusUpdateResponse> updateEventRequestsStatus(
+            @PathVariable @Positive Long userId,
+            @PathVariable @Positive Long eventId,
+            @RequestBody @Valid ParticipationStatusUpdateRequest request
+    ) {
+        log.info("Updating following requests={} for user with id={} event with id={} ", request, userId, eventId);
+        return ResponseEntity.ok(participationRequestService.updateRequestStatus(userId, eventId, request));
     }
 }

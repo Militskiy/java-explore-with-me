@@ -17,4 +17,6 @@ public interface UserService {
     User findUserEntity(Long id);
 
     void deleteUser(Long id);
+
+    void checkUser(Long id);
 }

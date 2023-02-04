@@ -6,13 +6,16 @@ import lombok.Setter;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.ewm.service.model.category.Category;
+import ru.practicum.ewm.service.model.request.ParticipationRequest;
 import ru.practicum.ewm.service.model.user.User;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,9 +23,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Set;
 
 @NamedEntityGraph(
         name = "event-entity-graph",
@@ -43,7 +48,7 @@ public class Event {
     private Long id;
     @Column(length = 2000, nullable = false)
     private String annotation;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
     private int confirmedRequests;
@@ -53,7 +58,7 @@ public class Event {
     private String description;
     @Column(nullable = false)
     private LocalDateTime eventDate;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiator_id")
     private User initiator;
     @Embedded
@@ -70,6 +75,8 @@ public class Event {
     private EventState state = EventState.PENDING;
     @Column(length = 120, nullable = false)
     private String title;
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    private Set<ParticipationRequest> requests;
 
     @Override
     public boolean equals(Object o) {

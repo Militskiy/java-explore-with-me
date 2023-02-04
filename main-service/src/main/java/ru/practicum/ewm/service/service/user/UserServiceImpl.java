@@ -52,7 +52,8 @@ public class UserServiceImpl implements UserService {
         repository.deleteById(id);
     }
 
-    private void checkUser(Long id) {
+    @Override
+    public void checkUser(Long id) {
         if (!repository.existsById(id)) {
             throw new NotFoundException("User with id=" + id + " not found");
         }

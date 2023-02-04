@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Value
 @Builder
 @Jacksonized
-public class EventResponse implements Serializable {
+public class EventResponse implements Serializable, Comparable<EventResponse> {
     Long id;
     String annotation;
     CategoryResponse category;
@@ -34,4 +34,9 @@ public class EventResponse implements Serializable {
     EventState state;
     String title;
     long views;
+
+    @Override
+    public int compareTo(EventResponse o) {
+        return Long.compare(this.views, o.views);
+    }
 }

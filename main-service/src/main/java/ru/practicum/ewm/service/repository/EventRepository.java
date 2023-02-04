@@ -23,6 +23,8 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
     @EntityGraph(value = "event-entity-graph")
     Optional<Event> findEventByIdAndInitiator_Id(Long eventId, Long userId);
 
+    Optional<Event> findByIdAndInitiator_Id(Long eventId, Long userId);
+
     boolean existsByCategory_Id(Long categoryId);
 
     @EntityGraph(value = "event-entity-graph")
