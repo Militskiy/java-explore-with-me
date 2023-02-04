@@ -11,6 +11,8 @@ import ru.practicum.ewm.service.dto.event.EventUpdateRequest;
 import ru.practicum.ewm.service.dto.request.ParticipationRequestList;
 import ru.practicum.ewm.service.model.event.Event;
 
+import java.util.Set;
+
 @Service
 public interface EventService {
     EventResponse createEvent(EventCreateRequest createRequest, Long userId);
@@ -32,5 +34,8 @@ public interface EventService {
     Event findUserEventEntity(Long eventId, Long userId);
 
     ParticipationRequestList findUserEventRequests(Long userId, Long eventId);
+
     EventResponse findEvent(Long eventId);
+
+    Set<Event> findEventsFrom(Set<Long> eventIds);
 }

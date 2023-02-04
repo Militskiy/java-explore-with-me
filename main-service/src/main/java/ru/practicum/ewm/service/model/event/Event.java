@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.ewm.service.model.category.Category;
+import ru.practicum.ewm.service.model.compilation.Compilation;
 import ru.practicum.ewm.service.model.request.ParticipationRequest;
 import ru.practicum.ewm.service.model.user.User;
 
@@ -20,6 +21,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
@@ -77,6 +79,8 @@ public class Event {
     private String title;
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     private Set<ParticipationRequest> requests;
+    @ManyToMany(mappedBy = "events")
+    private Set<Compilation> compilations;
 
     @Override
     public boolean equals(Object o) {

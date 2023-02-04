@@ -12,8 +12,10 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 import ru.practicum.ewm.service.model.event.Event;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
@@ -30,4 +32,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
     @EntityGraph(value = "event-entity-graph")
     @NonNull
     Page<Event> findAll(@Nullable Predicate predicate, @Nullable Pageable pageable);
+
+    Set<Event> findEventsByIdIn(Collection<Long> eventIds);
 }

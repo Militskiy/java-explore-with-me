@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ru.practicum.ewm.service.dto.event.SortType.VIEWS;
@@ -173,6 +174,11 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventResponse findEvent(Long eventId) {
         return buildEventResponse(List.of(findEventEntity(eventId))).get(0);
+    }
+
+    @Override
+    public Set<Event> findEventsFrom(Set<Long> eventIds) {
+        return eventRepository.findEventsByIdIn(eventIds);
     }
 
     @Override

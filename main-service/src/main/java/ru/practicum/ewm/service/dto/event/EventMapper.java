@@ -36,4 +36,9 @@ public interface EventMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(source = "category", target = "category.id")
     Event adminUpdate(EventUpdateAdminRequest eventUpdateAdminRequest, @MappingTarget Event event);
+
+    Event toEntity1(EventShortResponse eventShortResponse);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    Event partialUpdate(EventShortResponse eventShortResponse, @MappingTarget Event event);
 }
