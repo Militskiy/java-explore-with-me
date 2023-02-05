@@ -120,8 +120,12 @@ public class EventServiceImpl implements EventService {
         if (filter.getOnlyAvailable() == null) {
             filter = filter.toBuilder().onlyAvailable(Boolean.FALSE).build();
         }
+        var queryBuilder = buildQuery(filter);
+        if (filter.getRangeStart() == null && filter.getRangeEnd() == null) {
+            queryBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
+        }
         var result = buildEventShortResponse(eventRepository.findAll(
-                buildQuery(filter),
+                queryBuilder,
                 PageRequest.of(from, size, Sort.by("eventDate").ascending())
         ).toList());
 
