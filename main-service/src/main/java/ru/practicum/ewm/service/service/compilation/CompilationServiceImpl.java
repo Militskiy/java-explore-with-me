@@ -1,5 +1,6 @@
 package ru.practicum.ewm.service.service.compilation;
 
+import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import ru.practicum.ewm.service.dto.compilation.CompilationResponse;
 import ru.practicum.ewm.service.dto.compilation.CompilationUpdateRequest;
 import ru.practicum.ewm.service.exception.NotFoundException;
 import ru.practicum.ewm.service.model.compilation.Compilation;
+import ru.practicum.ewm.service.model.compilation.QCompilation;
 import ru.practicum.ewm.service.repository.CompilationRepository;
 import ru.practicum.ewm.service.service.event.EventService;
 
@@ -56,13 +58,12 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationList findCompilations(Boolean pinned, Integer from, Integer size) {
         List<CompilationResponse> result;
+        BooleanBuilder builder = new BooleanBuilder();
         if (pinned != null) {
-            result = repository.findByPinned(pinned, PageRequest.of(from, size))
-                    .stream().map(mapper::toResponse).collect(Collectors.toList());
-        } else {
-            result = repository.findAll(PageRequest.of(from, size))
-                    .stream().map(mapper::toResponse).collect(Collectors.toList());
+            builder.and(QCompilation.compilation.pinned.eq(pinned));
         }
+        result = repository.findAll(builder, PageRequest.of(from, size))
+                .stream().map(mapper::toResponse).collect(Collectors.toList());
         return CompilationList.builder().compilations(result).build();
     }
 

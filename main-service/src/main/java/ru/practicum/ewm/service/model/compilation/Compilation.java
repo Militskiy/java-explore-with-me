@@ -28,12 +28,13 @@ import java.util.Set;
 @NamedEntityGraph(
         name = "compilation-entity-graph",
         attributeNodes = {
-                @NamedAttributeNode(value = "events", subgraph = "events.user"),
-                @NamedAttributeNode(value = "events", subgraph = "events.category")
+                @NamedAttributeNode(value = "events", subgraph = "events")
         },
         subgraphs = {
-                @NamedSubgraph(name = "events.user", attributeNodes = @NamedAttributeNode("initiator")),
-                @NamedSubgraph(name = "events.category", attributeNodes = @NamedAttributeNode("category"))
+                @NamedSubgraph(name = "events", attributeNodes = {
+                        @NamedAttributeNode("initiator"),
+                        @NamedAttributeNode("category")
+                })
         }
 )
 @Entity
