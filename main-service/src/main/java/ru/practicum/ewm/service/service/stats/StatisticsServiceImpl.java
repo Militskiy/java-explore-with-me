@@ -24,8 +24,8 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     public void saveUriHitStats(HttpServletRequest request) {
-        log.info("Successfully sent hit info: {}",
-                uploadUriHit(makeHitCreateRequest(request.getRequestURI(), request.getRemoteAddr())).block());
+        uploadUriHit(makeHitCreateRequest(request.getRequestURI(), request.getRemoteAddr()))
+                .subscribe(hitCreateResponse -> log.info("Successfully sent hit info: {}", hitCreateResponse));
     }
 
     @Override
