@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolationException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -46,7 +45,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleThrowable(final Throwable e) {
         log.error(ExceptionUtils.getStackTrace(e));
         final var status = HttpStatus.INTERNAL_SERVER_ERROR;
-        List<String> stackTrace = Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList());
+        final var stackTrace = Arrays.stream(e.getStackTrace())
+                .map(StackTraceElement::toString)
+                .collect(Collectors.toList());
         final var apiError = ApiError.builder()
                 .errors(stackTrace)
                 .status(status)

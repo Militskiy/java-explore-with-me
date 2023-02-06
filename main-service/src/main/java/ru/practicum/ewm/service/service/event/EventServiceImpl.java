@@ -256,7 +256,8 @@ public class EventServiceImpl implements EventService {
             builder.and(QEvent.event.eventDate.before(filter.getRangeEnd()));
         }
         if (filter.getOnlyAvailable() != null) {
-            builder.and(QEvent.event.participantLimit.gt(0));
+            builder.and(QEvent.event.participantLimit.eq(0)
+                    .or(QEvent.event.participantLimit.gt(QEvent.event.confirmedRequests)));
         }
         return builder;
     }
