@@ -96,42 +96,79 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             ParticipationStatusUpdateRequest statusUpdateRequest
     ) {
         Event event = eventService.findUserEventEntity(eventId, userId);
-        if (event.getParticipantLimit() > 0) {
-            List<ParticipationRequestResponse> confirmed = new ArrayList<>();
-            List<ParticipationRequestResponse> rejected = new ArrayList<>();
-            requestRepository.findParticipationRequestsByIdIn(statusUpdateRequest.getRequestIds())
-                    .stream()
-                    .peek(request -> {
-                        if (request.getStatus().equals(PENDING)) {
-                            if (statusUpdateRequest.getStatus().equals(ParticipationUpdateStatus.CONFIRMED)) {
-                                if (event.getParticipantLimit() > 0) {
-                                    request.setStatus(CONFIRMED);
-                                    event.setParticipantLimit(event.getParticipantLimit() - 1);
-                                } else {
-                                    request.setStatus(REJECTED);
-                                }
+        if (event.getParticipantLimit() == event.getConfirmedRequests() && event.getParticipantLimit() != 0) {
+            throw new ConflictException("The participant limit has been reached");
+        }
+        List<ParticipationRequestResponse> confirmed = new ArrayList<>();
+        List<ParticipationRequestResponse> rejected = new ArrayList<>();
+        if (event.getParticipantLimit() == 0) {
+            mapRequests(confirmed, rejected, confirmRequestsNoLimit(statusUpdateRequest, event));
+        } else {
+            mapRequests(confirmed, rejected, confirmRequestsWithLimit(statusUpdateRequest, event));
+        }
+        return ParticipationStatusUpdateResponse.builder()
+                .confirmedRequests(confirmed)
+                .rejectedRequests(rejected)
+                .build();
+    }
+
+    private List<ParticipationRequestResponse> confirmRequestsNoLimit(
+            ParticipationStatusUpdateRequest statusUpdateRequest, Event event
+    ) {
+        return requestRepository.findParticipationRequestsByIdIn(statusUpdateRequest.getRequestIds())
+                .stream()
+                .peek(request -> {
+                    if (request.getStatus().equals(PENDING)) {
+                        if (statusUpdateRequest.getStatus().equals(ParticipationUpdateStatus.CONFIRMED)) {
+                            request.setStatus(CONFIRMED);
+                            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+                        } else {
+                            request.setStatus(REJECTED);
+                        }
+                    } else {
+                        throw new ConflictException("Can only confirm PENDING requests");
+                    }
+                })
+                .map(mapper::toResponse).collect(Collectors.toList());
+    }
+
+    private List<ParticipationRequestResponse> confirmRequestsWithLimit(
+            ParticipationStatusUpdateRequest statusUpdateRequest, Event event
+    ) {
+        return requestRepository.findParticipationRequestsByIdIn(statusUpdateRequest.getRequestIds())
+                .stream()
+                .peek(request -> {
+                    if (request.getStatus().equals(PENDING)) {
+                        if (statusUpdateRequest.getStatus().equals(ParticipationUpdateStatus.CONFIRMED)) {
+                            long limit = event.getParticipantLimit() - event.getConfirmedRequests();
+                            if (limit > 0) {
+                                request.setStatus(CONFIRMED);
+                                event.setConfirmedRequests(event.getConfirmedRequests() + 1);
                             } else {
                                 request.setStatus(REJECTED);
                             }
                         } else {
-                            throw new ConflictException("Can only confirm PENDING requests");
+                            request.setStatus(REJECTED);
                         }
-                    })
-                    .map(mapper::toResponse)
-                    .forEach(request -> {
-                        if (request.getStatus().equals(CONFIRMED)) {
-                            confirmed.add(request);
-                        } else {
-                            rejected.add(request);
-                        }
-                    });
-            return ParticipationStatusUpdateResponse.builder()
-                    .confirmedRequests(confirmed)
-                    .rejectedRequests(rejected)
-                    .build();
-        } else {
-            throw new ConflictException("The participant limit has been reached");
-        }
+                    } else {
+                        throw new ConflictException("Can only confirm PENDING requests");
+                    }
+                })
+                .map(mapper::toResponse).collect(Collectors.toList());
+    }
+
+    private void mapRequests(
+            List<ParticipationRequestResponse> confirmed,
+            List<ParticipationRequestResponse> rejected,
+            List<ParticipationRequestResponse> requests
+    ) {
+        requests.forEach(request -> {
+            if (request.getStatus().equals(CONFIRMED)) {
+                confirmed.add(request);
+            } else {
+                rejected.add(request);
+            }
+        });
     }
 
     private ParticipationRequest getRequestEntity(Long requestId) {

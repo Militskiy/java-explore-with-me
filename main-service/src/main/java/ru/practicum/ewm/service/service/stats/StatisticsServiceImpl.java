@@ -34,7 +34,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         var uris = eventIds.stream()
                 .map(id -> "/events/" + id)
                 .collect(Collectors.toList());
-        return client.getStats(start, end, uris, false);
+        return client.getStats(start, end, uris, true);
     }
 
     private HitCreateRequest makeHitCreateRequest(String uri, String ip) {
