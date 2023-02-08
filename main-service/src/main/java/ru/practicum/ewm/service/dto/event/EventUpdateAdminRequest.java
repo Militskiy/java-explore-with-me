@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import ru.practicum.ewm.service.annotation.EventNotEarly;
-import ru.practicum.ewm.service.dto.location.LocationDto;
+import ru.practicum.ewm.service.dto.location.Coordinates;
 import ru.practicum.ewm.service.model.event.AdminStateAction;
 
 import javax.validation.Valid;
@@ -34,7 +34,7 @@ public class EventUpdateAdminRequest implements Serializable {
     @EventNotEarly(value = 1, message = "Too late to publish event, less then one hour left until planned start.")
     LocalDateTime eventDate;
     @Schema(example = "{\"lat\": 55.75, \"lon\": 37.62}")
-    LocationDto location;
+    Coordinates location;
     @Schema(example = "false")
     Boolean paid;
     @Schema(example = "10")

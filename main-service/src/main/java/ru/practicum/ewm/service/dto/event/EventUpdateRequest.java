@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import ru.practicum.ewm.service.annotation.EventNotEarly;
-import ru.practicum.ewm.service.dto.location.LocationDto;
+import ru.practicum.ewm.service.dto.location.Coordinates;
 import ru.practicum.ewm.service.model.event.UserStateActions;
 
 import javax.validation.Valid;
@@ -37,7 +37,7 @@ public class EventUpdateRequest implements Serializable {
     @EventNotEarly
     LocalDateTime eventDate;
     @Schema(example = "{\"lat\": 55.75, \"lon\": 37.62}")
-    LocationDto location;
+    Coordinates location;
     @Schema(example = "false")
     Boolean paid;
     @Schema(example = "10")

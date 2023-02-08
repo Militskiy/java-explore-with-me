@@ -1,7 +1,9 @@
 package ru.practicum.ewm.service.service.event;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.NonNull;
@@ -23,9 +25,11 @@ import ru.practicum.ewm.service.exception.NotFoundException;
 import ru.practicum.ewm.service.model.category.Category;
 import ru.practicum.ewm.service.model.event.Event;
 import ru.practicum.ewm.service.model.event.QEvent;
+import ru.practicum.ewm.service.model.location.Location;
 import ru.practicum.ewm.service.model.user.User;
 import ru.practicum.ewm.service.repository.EventRepository;
 import ru.practicum.ewm.service.service.category.CategoryService;
+import ru.practicum.ewm.service.service.location.LocationService;
 import ru.practicum.ewm.service.service.stats.StatisticsService;
 import ru.practicum.ewm.service.service.user.UserService;
 import ru.practicum.ewm.stats.dto.HitStats;
@@ -53,15 +57,18 @@ public class EventServiceImpl implements EventService {
     private final UserService userService;
     private final CategoryService categoryService;
     private final StatisticsService statisticsService;
+    private final LocationService locationService;
     private final EventMapper mapper;
     private final ParticipationRequestMapper participationRequestMapper;
+    private final GeometryFactory factory;
+
 
     @Override
     @Transactional
     public EventResponse createEvent(EventCreateRequest createRequest, Long userId) {
         User user = userService.findUserEntity(userId);
         Category category = categoryService.findCategoryEntity(createRequest.getCategory());
-        Event createdEvent = mapper.toEntity(createRequest);
+        Event createdEvent = mapper.toEntity(createRequest, factory);
         createdEvent.setInitiator(user);
         createdEvent.setCategory(category);
         return mapper.toResponse(eventRepository.save(createdEvent));
@@ -91,7 +98,7 @@ public class EventServiceImpl implements EventService {
     public EventResponse updateEvent(EventUpdateRequest updateRequest, Long eventId, Long userId) {
         Event foundEvent = findUserEventEntity(eventId, userId);
         if (!foundEvent.getState().equals(PUBLISHED)) {
-            mapper.updateEntity(updateRequest, foundEvent);
+            mapper.updateEntity(updateRequest, foundEvent, factory);
             if (updateRequest.getStateAction() != null) {
                 if (updateRequest.getStateAction().equals(SEND_TO_REVIEW)) {
                     foundEvent.setState(PENDING);
@@ -136,8 +143,9 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public EventResponse confirmEvent(EventUpdateAdminRequest updateAdminRequest, Long eventId) {
-        Event foundEvent = findEventEntity(eventId);
+        var foundEvent = findEventEntity(eventId);
         if (!foundEvent.getState().equals(PUBLISHED)) {
             if (updateAdminRequest.getStateAction() != null) {
                 if (updateAdminRequest.getStateAction().equals(PUBLISH_EVENT) &&
@@ -150,7 +158,11 @@ public class EventServiceImpl implements EventService {
                             foundEvent.getState());
                 }
             }
-            mapper.adminUpdate(updateAdminRequest, foundEvent);
+            if (updateAdminRequest.getCategory() != null) {
+                var category = categoryService.findCategoryEntity(updateAdminRequest.getCategory());
+                foundEvent.setCategory(category);
+            }
+            mapper.adminUpdate(updateAdminRequest, foundEvent, factory);
             return mapper.toResponse(eventRepository.save(foundEvent));
         }
         throw new ConflictException("Cannot update the event because it's not in the right state: " +
@@ -258,6 +270,11 @@ public class EventServiceImpl implements EventService {
         if (filter.getOnlyAvailable() != null) {
             builder.and(QEvent.event.participantLimit.eq(0)
                     .or(QEvent.event.participantLimit.gt(QEvent.event.confirmedRequests)));
+        }
+        if (filter.getLocation() != null) {
+            Location centerPoint = locationService.getLocationEntity(filter.getLocation());
+            builder.and(Expressions.numberTemplate(Double.class, "st_distancesphere({0}, {1})",
+                    QEvent.event.location, centerPoint.getLocation()).loe(centerPoint.getRange()));
         }
         return builder;
     }

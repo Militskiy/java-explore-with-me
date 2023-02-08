@@ -95,7 +95,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             Long eventId,
             ParticipationStatusUpdateRequest statusUpdateRequest
     ) {
-        Event event = eventService.findUserEventEntity(eventId, userId);
+        var event = eventService.findUserEventEntity(eventId, userId);
         if (event.getParticipantLimit() == event.getConfirmedRequests() && event.getParticipantLimit() != 0) {
             throw new ConflictException("The participant limit has been reached");
         }

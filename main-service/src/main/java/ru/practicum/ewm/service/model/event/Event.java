@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.CreationTimestamp;
+import org.locationtech.jts.geom.Point;
 import ru.practicum.ewm.service.model.category.Category;
 import ru.practicum.ewm.service.model.compilation.Compilation;
 import ru.practicum.ewm.service.model.request.ParticipationRequest;
@@ -12,7 +13,6 @@ import ru.practicum.ewm.service.model.user.User;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -63,8 +63,7 @@ public class Event {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiator_id")
     private User initiator;
-    @Embedded
-    private Location location;
+    private Point location;
     @Column(nullable = false)
     private Boolean paid = Boolean.FALSE;
     @Column(nullable = false)

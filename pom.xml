@@ -15,7 +15,7 @@
 	<modules>
 		<module>main-service</module>
         <module>stats-service</module>
-    </modules>
+	</modules>
 
 	<groupId>ru.practicum.ewm</groupId>
 	<artifactId>explore-with-me</artifactId>

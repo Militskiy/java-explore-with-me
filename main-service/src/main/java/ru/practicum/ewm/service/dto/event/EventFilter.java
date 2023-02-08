@@ -24,4 +24,5 @@ public class EventFilter {
     LocalDateTime rangeEnd;
     Boolean onlyAvailable;
     SortType sort;
+    Long location;
 }

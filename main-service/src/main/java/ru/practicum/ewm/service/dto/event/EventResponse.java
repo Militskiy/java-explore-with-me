@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import ru.practicum.ewm.service.dto.category.CategoryResponse;
-import ru.practicum.ewm.service.dto.location.LocationDto;
+import ru.practicum.ewm.service.dto.location.Coordinates;
 import ru.practicum.ewm.service.dto.user.Initiator;
 import ru.practicum.ewm.service.model.event.EventState;
 
@@ -26,7 +26,7 @@ public class EventResponse implements Serializable, Comparable<EventResponse> {
     String description;
     LocalDateTime eventDate;
     Initiator initiator;
-    LocationDto location;
+    Coordinates location;
     Boolean paid;
     Short participantLimit;
     LocalDateTime publishedOn;

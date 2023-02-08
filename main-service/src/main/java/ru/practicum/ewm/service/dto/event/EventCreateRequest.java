@@ -6,7 +6,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.ewm.service.annotation.EventNotEarly;
-import ru.practicum.ewm.service.dto.location.LocationDto;
+import ru.practicum.ewm.service.dto.location.Coordinates;
 import ru.practicum.ewm.service.validator.SecondOrder;
 
 import javax.validation.constraints.NotBlank;
@@ -42,7 +42,7 @@ public class EventCreateRequest implements Serializable {
     LocalDateTime eventDate;
     @NotNull(groups = Default.class)
     @Schema(example = "{\"lat\": 55.75, \"lon\": 37.62}")
-    LocationDto location;
+    Coordinates location;
     @Schema(example = "false")
     Boolean paid;
     @Schema(example = "10")
