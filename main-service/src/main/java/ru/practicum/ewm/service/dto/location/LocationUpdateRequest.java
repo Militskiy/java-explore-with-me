@@ -7,8 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 /**
@@ -18,14 +17,12 @@ import java.io.Serializable;
 @Builder
 @Jacksonized
 @Valid
-public class LocationCreateRequest implements Serializable {
-    @NotBlank
+public class LocationUpdateRequest implements Serializable {
+    @Pattern(regexp = "^[^ ].*[^ .]$", message = "not valid")
     @Schema(example = "Moscow")
     String name;
-    @NotNull
     Coordinates location;
     @Min(1)
-    @NotNull
     @Schema(example = "100000")
     Long range;
 }

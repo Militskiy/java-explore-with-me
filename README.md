@@ -1,2 +1,4 @@
 # java-explore-with-me
-Template repository for ExploreWithMe project.
+
+# Swagger OpenAPI definition link: 
+http://localhost:8080/swagger-ui/index.html

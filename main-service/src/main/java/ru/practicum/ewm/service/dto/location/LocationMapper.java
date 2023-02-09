@@ -21,7 +21,7 @@ public interface LocationMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "location", source = "location", qualifiedByName = "toPoint")
     Location partialUpdate(
-            LocationCreateRequest locationCreateRequest,
+            LocationUpdateRequest locationUpdateRequest,
             @MappingTarget Location location,
             @Context GeometryFactory factory
     );
