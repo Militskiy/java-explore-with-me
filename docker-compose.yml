@@ -1,15 +1,60 @@
-version: '3.1'
+version: '3.8'
 services:
   stats-server:
+    build: ./stats-service/stats-server
+    image: stats-server
+    container_name: ewm-stats-server
+    depends_on:
+      - stats-db
+    restart: on-failure
     ports:
       - "9090:9090"
+    environment:
+      - DB_NAME=stats
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_MONGO_HOST=stats-db
+      - DB_MONGO_PORT=27017
 
   stats-db:
-    image: postgres:14-alpine
+    image: mongo:6.0
+    container_name: ewm-stats-mongo-db
+    depends_on:
+      - ewm-db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: stats
+    volumes:
+      - /var/lib/db/data/stats
 
   ewm-service:
+    build: ./main-service
+    image: ewm-service
+    container_name: ewm-service
+    depends_on:
+      - stats-server
+    restart: on-failure
     ports:
       - "8080:8080"
+    environment:
+      - STATS_SERVER_URL=http://stats-server:9090
+      - DB_NAME=ewm
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - DB_HOST=ewm-db
+      - DB_PORT=5432
 
   ewm-db:
-    image: postgres:14-alpine
+    image: kartoza/postgis:15-3.3
+    container_name: ewm-db
+    ports:
+      - "6541:5432"
+    environment:
+      - POSTGRES_DB=ewm
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    volumes:
+      - /var/lib/db/data/main
