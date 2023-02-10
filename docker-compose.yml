@@ -6,6 +6,7 @@ services:
     container_name: ewm-stats-server
     depends_on:
       - stats-db
+    restart: on-failure
     ports:
       - "9090:9090"
     environment:
@@ -18,6 +19,8 @@ services:
   stats-db:
     image: mongo:6.0
     container_name: ewm-stats-mongo-db
+    depends_on:
+      - ewm-db
     ports:
       - "27017:27017"
     environment:
@@ -33,7 +36,7 @@ services:
     container_name: ewm-service
     depends_on:
       - stats-server
-      - ewm-db
+    restart: on-failure
     ports:
       - "8080:8080"
     environment:
